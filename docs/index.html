@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>菜鸟素材工坊</title>
+<style>body{font:16px/1.8 system-ui;background:#f7f8f3;color:#263b30;margin:0;padding:12vh 20px}main{max-width:580px;margin:auto;padding:32px;background:white;border-radius:20px}h1{font-size:28px}button,a{background:#ed682d;color:white;border:0;padding:12px 22px;border-radius:9px;font:inherit;cursor:pointer;text-decoration:none}small{display:block;color:#758174;margin-top:24px}</style>
+<main><h1>菜鸟素材工坊</h1><p id="status" role="status">正在查找可用工作台…</p><a id="open" hidden>进入素材工坊</a><button id="retry" hidden>重新连接</button><small>无需安装软件。请保留同事发来的完整分享链接。</small></main>
+<script>
+const params=new URLSearchParams(location.hash.slice(1)),access=params.get('access');
+const status=document.getElementById('status'),open=document.getElementById('open'),retry=document.getElementById('retry');
+async function connect(){
+ retry.hidden=true;open.hidden=true;
+ if(!access){status.textContent='分享链接缺少访问码，请使用同事发来的完整链接打开。';return;}
+ status.textContent='正在连接最新工作台…';
+ try{
+  const response=await fetch('https://raw.githubusercontent.com/ws00066/cainiao-material-studio-downloads/main/docs/endpoint.json?t='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(15000)});
+  if(!response.ok)throw Error('entry');const info=await response.json(),target=new URL(info.base);
+  if(target.protocol!=='https:'||!target.hostname.endsWith('.trycloudflare.com'))throw Error('address');
+  target.pathname='/';target.searchParams.set('access',access);
+  open.href=target.href;open.hidden=false;status.textContent='工作台入口已更新，正在打开…';
+  location.replace(target.href);
+ }catch{status.textContent='暂时无法取得工作台入口，请稍后重试或联系工坊维护者。';retry.hidden=false;}
+}
+retry.onclick=connect;connect();
+</script></html>
